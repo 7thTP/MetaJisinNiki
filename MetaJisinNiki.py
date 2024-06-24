@@ -3,14 +3,14 @@ from mtgsdk import Card
 from collections import Counter
 
 import pandas as pd
-import numpy as np
 import pickle
 import re
 import MeCab
 
+
 def main(TP):
     # open cardlist.bin
-    with open('cardlist.bin', 'rb') as f:
+    with open('cardlist-ja.bin', 'rb') as f:
         cards = pickle.load(f)
 
     print('input data path')
@@ -21,18 +21,26 @@ def main(TP):
     sentence = ''
 
     for card in deck:
-        #print(card.name)
-        df_mana.loc[card.name] = 0
+        # print(card.name)
         if '//' in card.name:  # Trap double-faced cards
             dfc = splitDoubleFaceCard(card.name)
             df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == dfc[0]].tolist()[0], 'number']
         else:
             df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == card.name].tolist()[0], 'number']
-        if card.original_text:
-            sentence = sentence + ' ' + card.original_text
+        if card.foreign_names:
+            for fore in card.foreign_names:
+                if fore['language'] == 'Japanese':
+                    if 'text' in fore:
+                        sentence = sentence + ' ' + fore['text']
+                    break
 
-    #Count品詞
+        else:
+            sentence = sentence + ' ' + card.text
+
+    # Count品詞
     tagger = MeCab.Tagger()
+    # 記号削除
+    sentence = re.sub(r"[!#$%&)*+,./:;?@^_`|{}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。？！｀＋￥％]", '', sentence)
     buffer = StringIO(tagger.parse(sentence))
 
     df = pd.read_csv(
@@ -84,20 +92,6 @@ def nameToCardData(c_name, cards):
         return 'not found'
     else:
         return 0
-
-
-def manaSplit(manaCost):
-    op = []
-    gm = 0
-    manas = re.findall("(?<=\{).+?(?=\})", manaCost)
-    for mana in manas:
-        if mana.isdigit():
-            gm = int(mana)
-        else:
-            op.append(mana)
-    if gm:
-        op[0:0] = ['GM'] * gm
-    return op
 
 
 def splitDoubleFaceCard(name):
