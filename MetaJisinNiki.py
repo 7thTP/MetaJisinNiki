@@ -6,36 +6,41 @@ import pandas as pd
 import pickle
 import re
 import MeCab
+import os
+import glob
 
 
-def main(TP):
+def main():
     # open cardlist.bin
     with open('cardlist-ja.bin', 'rb') as f:
         cards = pickle.load(f)
 
     print('input data path')
-    dl = get_kingyoDeckList(TP)  # get Kingyo format data
-    df_d = listToPD(dl)  # Reformat list
-    deck = [nameToCardData(item['name'], cards) for index, item in df_d.iterrows()]  # Get deck card data
-    df_mana = pd.DataFrame(index=[], columns=['number'])
-    sentence = ''
+    # inport decks
+    dir_path = "./decks/"
+    file_list = glob.glob(os.path.join(dir_path, "*.txt"))
+    for deck_path in file_list:
+        dl = get_kingyoDeckList(deck_path)  # get Kingyo format data
+        df_d = listToPD(dl)  # Reformat list
+        deck = [nameToCardData(item['name'], cards) for index, item in df_d.iterrows()]  # Get deck card data
+        df_mana = pd.DataFrame(index=[], columns=['number'])
+        sentence = ''
+        print('inport :' + deck_path)
+        for card in deck:
+            #print(card.name)
+            #if '//' in card.name:  # Trap double-faced cards
+            #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == dfc[0]].tolist()[0], 'number']
+            #else:
+            #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == card.name].tolist()[0], 'number']
+            if card.foreign_names:
+                for fore in card.foreign_names:
+                    if fore['language'] == 'Japanese':
+                        if 'text' in fore:
+                            sentence = sentence + ' ' + fore['text']
+                        break
 
-    for card in deck:
-        # print(card.name)
-        if '//' in card.name:  # Trap double-faced cards
-            dfc = splitDoubleFaceCard(card.name)
-            df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == dfc[0]].tolist()[0], 'number']
-        else:
-            df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == card.name].tolist()[0], 'number']
-        if card.foreign_names:
-            for fore in card.foreign_names:
-                if fore['language'] == 'Japanese':
-                    if 'text' in fore:
-                        sentence = sentence + ' ' + fore['text']
-                    break
-
-        else:
-            sentence = sentence + ' ' + card.text
+            else:
+                sentence = sentence + ' ' + card.text
 
     # Count品詞
     tagger = MeCab.Tagger()
@@ -61,7 +66,7 @@ def main(TP):
             noun_counter[word] = 1
 
     c = Counter(noun_df["表層形"])
-    print(c.most_common(20))
+    print(c.most_common(50))
 
 
 def get_kingyoDeckList(TP):
@@ -99,5 +104,4 @@ def splitDoubleFaceCard(name):
 
 
 if __name__ == "__main__":
-    TP = r'C:\temp\Deck.txt'  # inport deck data
-    main(TP)
+    main()
