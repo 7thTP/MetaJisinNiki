@@ -19,28 +19,30 @@ def main():
     # inport decks
     dir_path = "./decks/"
     file_list = glob.glob(os.path.join(dir_path, "*.txt"))
+    sentence = ''
     for deck_path in file_list:
         dl = get_kingyoDeckList(deck_path)  # get Kingyo format data
         df_d = listToPD(dl)  # Reformat list
         deck = [nameToCardData(item['name'], cards) for index, item in df_d.iterrows()]  # Get deck card data
-        df_mana = pd.DataFrame(index=[], columns=['number'])
-        sentence = ''
+        #df_mana = pd.DataFrame(index=[], columns=['number'])
         print('inport :' + deck_path)
         for card in deck:
+            if not card:
+                continue
             #print(card.name)
-            #if '//' in card.name:  # Trap double-faced cards
+            # if '//' in card.name:  # Trap double-faced cards
             #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == dfc[0]].tolist()[0], 'number']
-            #else:
+            # else:
             #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == card.name].tolist()[0], 'number']
             if card.foreign_names:
                 for fore in card.foreign_names:
                     if fore['language'] == 'Japanese':
                         if 'text' in fore:
-                            sentence = sentence + ' ' + fore['text']
+                            sentence = margeStr(sentence, fore['text'])
                         break
 
             else:
-                sentence = sentence + ' ' + card.text
+                sentence = margeStr(sentence, card.text)
 
     # Count品詞
     tagger = MeCab.Tagger()
@@ -56,16 +58,16 @@ def main():
         sep="[\t,,]",
         engine="python",
     )
-    noun_df = df.query("品詞=='名詞'")
+    #noun_df = df.query("品詞=='名詞'")
     noun_counter = dict()
 
-    for word in noun_df["表層形"]:
+    for word in df["表層形"]:
         if noun_counter.get(word):
             noun_counter[word] += 1
         else:
             noun_counter[word] = 1
 
-    c = Counter(noun_df["表層形"])
+    c = Counter(df["表層形"])
     print(c.most_common(50))
 
 
@@ -80,7 +82,8 @@ def get_kingyoDeckList(TP):
 def listToPD(dl):  # MTG decklist format re-format ['number', 'name']
     dl2 = []
     for l in dl:
-        dl2.append(l.split(' ', 1))
+        if l:
+            dl2.append(l.split(' ', 1))
     dfDeck = pd.DataFrame(dl2, columns=['number', 'name'])
     return dfDeck
 
@@ -94,13 +97,21 @@ def nameToCardData(c_name, cards):
                     return card
             elif card.name == c_name:  # Processing one-faced cards
                 return card
-        return 'not found'
+        return False
     else:
-        return 0
+        return False
 
 
 def splitDoubleFaceCard(name):
     return name.split(' // ')
+
+
+# Check addStr type and marge strings between space
+def margeStr(sorceStr, addStr):
+    if type(addStr) == str:
+        return sorceStr + ' ' + addStr
+    else:
+        return sorceStr
 
 
 if __name__ == "__main__":
