@@ -19,56 +19,74 @@ def main():
     # inport decks
     dir_path = "./decks/"
     file_list = glob.glob(os.path.join(dir_path, "*.txt"))
-    sentence = ''
+    sentence = {}
+    type_n = {}
+    deck_n = 0
     for deck_path in file_list:
+        deck_n = deck_n + 1
         dl = get_kingyoDeckList(deck_path)  # get Kingyo format data
         df_d = listToPD(dl)  # Reformat list
         deck = [nameToCardData(item['name'], cards) for index, item in df_d.iterrows()]  # Get deck card data
-        #df_mana = pd.DataFrame(index=[], columns=['number'])
+        # df_mana = pd.DataFrame(index=[], columns=['number'])
         print('inport :' + deck_path)
         for card in deck:
             if not card:
                 continue
-            #print(card.name)
+            # print(card.name)
             # if '//' in card.name:  # Trap double-faced cards
             #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == dfc[0]].tolist()[0], 'number']
             # else:
             #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == card.name].tolist()[0], 'number']
             if card.foreign_names:
-                for fore in card.foreign_names:
-                    if fore['language'] == 'Japanese':
-                        if 'text' in fore:
-                            sentence = margeStr(sentence, fore['text'])
+                for foreign in card.foreign_names:
+                    if foreign['language'] == 'Japanese':
+                        if 'text' in foreign:
+                            # dict key check
+                            if sentence.get(card.types[0]):
+                                sentence[card.types[0]] = margeStr(sentence[card.types[0]], foreign['text'])
+                                type_n[card.types[0]] = type_n[card.types[0]] + 1
+                            else:
+                                sentence[card.types[0]] = margeStr('', foreign['text'])
+                                type_n[card.types[0]] = 1
                         break
 
             else:
-                sentence = margeStr(sentence, card.text)
+                # dict key check
+                if sentence.get(card.types[0]):
+                    sentence[card.types[0]] = margeStr(sentence[card.types[0]], card.text)
+                    type_n[card.types[0]] = type_n[card.types[0]] + 1
+                else:
+                    sentence[card.types[0]] = margeStr('', card.text)
+                    type_n[card.types[0]] = 1
 
     # Count品詞
-    tagger = MeCab.Tagger()
-    # 記号削除
-    sentence = re.sub(r"[!#$%&)*+,./:;?@^_`|{}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。？！｀＋￥％]", '', sentence)
-    buffer = StringIO(tagger.parse(sentence))
+    print('カード効果テキスト中の頻出単語 (deck n=',deck_n ,')')
+    for sent in sentence:
+        tagger = MeCab.Tagger()
+        print(sent, '(n=', type_n[sent], ')')
+        # 記号削除
+        sentence[sent] = re.sub(r"[!#$%&)*+,./:;?@^_`|{}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。？！｀＋￥％]", '', sentence[sent])
+        buffer = StringIO(tagger.parse(sentence[sent]))
 
-    df = pd.read_csv(
-        buffer,
-        names=["表層形", "品詞", "品詞細分類1", "品詞細分類2", "品詞細分類3", "活用型", "活用形", "原形", "読み",
-               "発音"],
-        skipfooter=1,
-        sep="[\t,,]",
-        engine="python",
-    )
-    #noun_df = df.query("品詞=='名詞'")
-    noun_counter = dict()
+        df = pd.read_csv(
+            buffer,
+            names=["表層形", "品詞", "品詞細分類1", "品詞細分類2", "品詞細分類3", "活用型", "活用形", "原形", "読み",
+                   "発音"],
+            skipfooter=1,
+            sep="[\t,,]",
+            engine="python",
+        )
+        noun_df = df.query("品詞=='名詞'")
+        noun_counter = dict()
 
-    for word in df["表層形"]:
-        if noun_counter.get(word):
-            noun_counter[word] += 1
-        else:
-            noun_counter[word] = 1
+        for word in noun_df["表層形"]:
+            if noun_counter.get(word):
+                noun_counter[word] += 1
+            else:
+                noun_counter[word] = 1
 
-    c = Counter(df["表層形"])
-    print(c.most_common(50))
+        c = Counter(noun_df["表層形"])
+        print(c.most_common(10))
 
 
 def get_kingyoDeckList(TP):
