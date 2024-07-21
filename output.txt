@@ -1,0 +1,43 @@
+input data path
+inport :./decks\Arcum_Dagsson.txt
+inport :./decks\Chainer,_Dementia_Master.txt
+inport :./decks\Deck - goblin mob.txt
+inport :./decks\Deck.txt
+inport :./decks\Derevi,_Empyrial_Tactician.txt
+inport :./decks\Edric,_Spymaster_of_Trest.txt
+inport :./decks\Gylwain,_Casting_Director.txt
+inport :./decks\Haldan,_Avid_Arcanist.txt
+inport :./decks\Kaalia_of_the_Vast.txt
+inport :./decks\Korvold,_Fae-Cursed_King.txt
+inport :./decks\Krark,_the_Thumbless.txt
+inport :./decks\Kraum,_Ludevic's_Opus.txt
+inport :./decks\Nezahal,_Primal_Tide.txt
+inport :./decks\Oswald_Fiddlebender.txt
+inport :./decks\Razaketh,_the_Foulblooded.txt
+inport :./decks\Rocco,_Cabaretti_Caterer.txt
+inport :./decks\Tevesh_Szat,_Doom_of_Fools.txt
+inport :./decks\Thrasios,_Triton_Hero.txt
+inport :./decks\Tivit,_Seller_of_Secrets.txt
+inport :./decks\Tymna_the_Weaver.txt
+inport :./decks\Urza,_Lord_High_Artificer.txt
+カード効果テキスト中の頻出単語 (deck n= 21 )
+Creature (n= 338 )
+[('１', 478), ('あなた', 448), ('カード', 214), ('戦場', 158), ('クリーチャー', 143), ('枚', 141), ('コントロール', 138), ('それ', 118), ('呪文', 110), ('たび', 108)]
+Artifact (n= 379 )
+[('１', 353), ('あなた', 301), ('T', 287), ('色', 151), ('カード', 121), ('点', 119), ('your', 115), ('マナ', 111), ('of', 105), ('1', 98)]
+Instant (n= 330 )
+[('あなた', 385), ('呪文', 342), ('それ', 269), ('対象', 233), ('１つ', 203), ('１', 182), ('カード', 113), ('枚', 102), ('マナコスト', 90), ('手札', 87)]
+Sorcery (n= 165 )
+[('あなた', 217), ('１', 152), ('カード', 150), ('ライブラリー', 117), ('枚', 90), ('その後', 55), ('対象', 53), ('クリーチャー', 52), ('ターン', 52), ('呪文', 47)]
+Enchantment (n= 110 )
+[('１', 174), ('あなた', 112), ('the', 88), ('クリーチャー', 57), ('1', 46), ('of', 45), ('個', 40), ('a', 40), ('枚', 39), ('戦場', 39)]
+Land (n= 423 )
+[('T', 489), ('the', 252), ('1', 217), ('battlefield', 207), ('or', 196), ('it', 192), ('a', 188), ('your', 182), ('Add', 180), ('life', 175)]
+Planeswalker (n= 9 )
+[('あなた', 14), ('枚', 12), ('カード', 11), ('your', 9), (']', 9), ('artifact', 9), ('1', 8), ('creature', 8), ('card', 8), ('-', 8)]
+Tribal (n= 2 )
+[('あなた', 5), ('ターン', 4), ('対象', 4), ('徘徊', 3), ('コスト', 3), ('呪文', 3), ('１つ', 3), ('ならず者', 2), ('ダメージ', 2), ('場合', 2)]
+Stickers (n= 30 )
+[('—', 120), ('TKTK', 60), ('creature', 38), ('this', 36), ('a', 30), ('TKTKTK', 27), ('Whenever', 24), ('to', 18), ('you', 18), ('TKTKTKTKTK', 17)]
+Battle (n= 1 )
+[('it', 6), ('a', 2), ('enters', 2), ('and', 2), ('When', 2), ('the', 2), ('battlefield', 2), ('search', 2), ('your', 2), ('library', 2)]
