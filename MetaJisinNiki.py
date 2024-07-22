@@ -25,22 +25,24 @@ def main():
     deck_n = 0
     for deck_path in file_list:
         deck_n = deck_n + 1
-        dl = get_kingyoDeckList(deck_path)  # get Kingyo format data
-        df_d = listToPD(dl)  # Reformat list
-        deck = [nameToCardData(item['name'], cards) for index, item in df_d.iterrows()]  # Get deck card data
-        # df_mana = pd.DataFrame(index=[], columns=['number'])
+        # get Kingyo format data
+        dl = get_kingyoDeckList(deck_path)
+        # Reformat list
+        df_d = listToPD(dl)
+        # Get deck card data
+        deck = [nameToCardData(item['name'], cards) for index, item in df_d.iterrows()]
         print('inport :' + deck_path)
         for card in deck:
+            # failed data trap
             if not card:
                 continue
-            # print(card.name)
-            # if '//' in card.name:  # Trap double-faced cards
-            #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == dfc[0]].tolist()[0], 'number']
-            # else:
-            #    df_mana.at[card.name, 'number'] = df_d.at[df_d.index[df_d['name'] == card.name].tolist()[0], 'number']
+
+            # append card text
             if card.foreign_names:
+                # search 'Japanese' loop
                 for foreign in card.foreign_names:
                     if foreign['language'] == 'Japanese':
+                        # check text is not brank
                         if 'text' in foreign:
                             # dict key check
                             if sentence.get(card.types[0]):
@@ -60,15 +62,15 @@ def main():
                     sentence[card.types[0]] = margeStr('', card.text)
                     type_n[card.types[0]] = 1
 
-    # Count品詞
     print('カード効果テキスト中の頻出単語 (deck n=', deck_n, ')')
-    for sent in sentence:
-        tagger = MeCab.Tagger()
-        print(sent, '(n=', type_n[sent], ')')
-        # 記号削除
-        sentence[sent] = re.sub(r"[!#$%&)*+,./:;?@^_`|{}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。？！｀＋￥％]", '', sentence[sent])
-        buffer = StringIO(tagger.parse(sentence[sent]))
+    for card_type in sentence:
+        print(card_type, '(n=', type_n[card_type], ')')
 
+        # MeCab process start
+        tagger = MeCab.Tagger()
+        # 記号削除
+        sentence[card_type] = re.sub(r"[!#$%&)*+,./:;?@^_`|{}~「」〔〕“”〈〉『』【】＆＊・（）＄＃＠。？！｀＋￥％]", '', sentence[card_type])
+        buffer = StringIO(tagger.parse(sentence[card_type]))
         df = pd.read_csv(
             buffer,
             names=["表層形", "品詞", "品詞細分類1", "品詞細分類2", "品詞細分類3", "活用型", "活用形", "原形", "読み",
@@ -77,11 +79,14 @@ def main():
             sep="[\t,,]",
             engine="python",
         )
-        noun_df = df.query("品詞=='名詞'")
+        # MeCab process end
 
+        noun_df = df.query("品詞=='名詞'")
+        # Count Mono
         c = Counter(noun_df["表層形"])
         print(' ', c.most_common(10))
 
+        # Count Bi
         print(' [bi-gram]')
         # 先頭の1列を選択 1次元配列（NumPy配列）に変換
         surface_column = noun_df["表層形"].to_numpy()
@@ -93,12 +98,13 @@ def main():
         c = Counter(bi_gram_array)
         print('   ', c.most_common(10))
 
+        # Count Tri
         print(' [tri-gram]')
         noun_array_counter = dict()
         tri_gram = n_gram(surface_column, 3)
         tri_gram_array = []
         for word in tri_gram:
-            tri_gram_array.append(word[0] + ' ' + word[1]+ ' ' + word[2])
+            tri_gram_array.append(word[0] + ' ' + word[1] + ' ' + word[2])
         c = Counter(tri_gram_array)
         print('   ', c.most_common(10))
 
