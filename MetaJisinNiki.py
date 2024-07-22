@@ -3,6 +3,7 @@ from mtgsdk import Card
 from collections import Counter
 
 import pandas as pd
+import numpy as np
 import pickle
 import re
 import MeCab
@@ -60,7 +61,7 @@ def main():
                     type_n[card.types[0]] = 1
 
     # Count品詞
-    print('カード効果テキスト中の頻出単語 (deck n=',deck_n ,')')
+    print('カード効果テキスト中の頻出単語 (deck n=', deck_n, ')')
     for sent in sentence:
         tagger = MeCab.Tagger()
         print(sent, '(n=', type_n[sent], ')')
@@ -77,16 +78,34 @@ def main():
             engine="python",
         )
         noun_df = df.query("品詞=='名詞'")
-        noun_counter = dict()
-
-        for word in noun_df["表層形"]:
-            if noun_counter.get(word):
-                noun_counter[word] += 1
-            else:
-                noun_counter[word] = 1
 
         c = Counter(noun_df["表層形"])
-        print(c.most_common(10))
+        print(' ', c.most_common(10))
+
+        print(' [bi-gram]')
+        # 先頭の1列を選択 1次元配列（NumPy配列）に変換
+        surface_column = noun_df["表層形"].to_numpy()
+        noun_array_counter = dict()
+        bi_gram = n_gram(surface_column, 2)
+        bi_gram_array = []
+        for word in bi_gram:
+            bi_gram_array.append(word[0] + ' ' + word[1])
+        c = Counter(bi_gram_array)
+        print('   ', c.most_common(10))
+
+        print(' [tri-gram]')
+        noun_array_counter = dict()
+        tri_gram = n_gram(surface_column, 3)
+        tri_gram_array = []
+        for word in tri_gram:
+            tri_gram_array.append(word[0] + ' ' + word[1]+ ' ' + word[2])
+        c = Counter(tri_gram_array)
+        print('   ', c.most_common(10))
+
+
+def n_gram(target, n):
+    # 基準を1[文字/単語]ずつずらしながらn文字分抜き出す
+    return [target[idx:idx + n] for idx in range(len(target) - n + 1)]
 
 
 def get_kingyoDeckList(TP):
